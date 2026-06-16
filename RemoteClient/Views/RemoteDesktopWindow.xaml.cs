@@ -1,5 +1,7 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using SharedLib;
 using RemoteClient.Services;
 
@@ -32,12 +34,22 @@ public partial class RemoteDesktopWindow : Window
 
         _signalR.FrameReceived += data =>
         {
-            Dispatcher.Invoke(() => _screenViewer.ProcessFrame(data));
-        };
-
-        _screenViewer.FrameReady += bitmap =>
-        {
-            Dispatcher.Invoke(() => ScreenImage.Source = bitmap);
+            try
+            {
+                using var ms = new MemoryStream(data);
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = ms;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                Dispatcher.BeginInvoke(() => ScreenImage.Source = bitmap);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText(Path.Combine(Path.GetTempPath(), "RemoteClient.log"),
+                    $"[{DateTime.Now:HH:mm:ss}] Frame error: {ex.Message}\n");
+            }
         };
 
         _chatService.MessageReceived += (msg, sender, dt) =>

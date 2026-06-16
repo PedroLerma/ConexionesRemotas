@@ -21,6 +21,9 @@ public class RemoteScreenViewerService
 
             FrameReady?.Invoke(bitmap);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            File.AppendAllText(Path.Combine(Path.GetTempPath(), "RemoteClient.log"), $"[{DateTime.Now:HH:mm:ss}] ProcessFrame error: {ex.Message}\n");
+        }
     }
 }
