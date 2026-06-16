@@ -32,8 +32,10 @@ public partial class RemoteDesktopWindow : Window
         _chatService.SetSessionCode(sessionCode);
         _fileTransfer.SetSessionCode(sessionCode);
 
+        Log($"Window created. SignalR connected: {_signalR.IsConnected}");
         _signalR.FrameReceived += data =>
         {
+            Log($"Frame received: {data.Length} bytes");
             try
             {
                 using var ms = new MemoryStream(data);
@@ -47,8 +49,7 @@ public partial class RemoteDesktopWindow : Window
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Path.Combine(Path.GetTempPath(), "RemoteClient.log"),
-                    $"[{DateTime.Now:HH:mm:ss}] Frame error: {ex.Message}\n");
+                Log($"Frame error: {ex.Message}");
             }
         };
 
@@ -152,6 +153,11 @@ public partial class RemoteDesktopWindow : Window
         {
             _ = _fileTransfer.SendFileAsync(dialog.FileName);
         }
+    }
+
+    private static void Log(string msg)
+    {
+        try { File.AppendAllText(Path.Combine(Path.GetTempPath(), "RemoteClient.log"), $"[{DateTime.Now:HH:mm:ss}] {msg}\n"); } catch { }
     }
 
     protected override void OnClosed(EventArgs e)

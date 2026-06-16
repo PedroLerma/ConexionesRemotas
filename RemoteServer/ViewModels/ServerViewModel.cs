@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,6 +57,7 @@ public class ServerViewModel : INotifyPropertyChanged
         _signalR.SessionReady += () =>
         {
             Status = "¡Cliente conectado!";
+            Log("SessionReady received, starting screen capture");
             _screenCapture.Start();
         };
 
@@ -83,14 +85,21 @@ public class ServerViewModel : INotifyPropertyChanged
 
         _screenCapture.FrameCaptured += async frameData =>
         {
-            if (!_signalR.IsConnected) return;
+            if (!_signalR.IsConnected)
+            {
+                Log("Frame captured but not connected, skipping");
+                return;
+            }
+            Log($"Frame captured: {frameData.Length} bytes, sending...");
             try
             {
                 await _signalR.SendFrame(ConnectionCode, frameData);
+                Log("Frame sent successfully");
             }
             catch (Exception ex)
             {
                 Status = $"Error enviando frame: {ex.Message}";
+                Log($"Frame send error: {ex.Message}");
             }
         };
     }
@@ -126,6 +135,11 @@ public class ServerViewModel : INotifyPropertyChanged
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(bytes).ToLower();
+    }
+
+    private static void Log(string msg)
+    {
+        try { File.AppendAllText(Path.Combine(Path.GetTempPath(), "RemoteServer.log"), $"[{DateTime.Now:HH:mm:ss}] {msg}\n"); } catch { }
     }
 
     protected void OnPropertyChanged([CallerMemberName] string? name = null)
