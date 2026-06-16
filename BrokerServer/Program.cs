@@ -4,7 +4,11 @@ using BrokerServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+    options.EnableDetailedErrors = true;
+});
 builder.Services.AddSingleton<CodeGenerator>();
 builder.Services.AddSingleton<SessionManager>();
 

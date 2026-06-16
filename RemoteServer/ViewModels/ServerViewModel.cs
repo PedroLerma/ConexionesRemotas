@@ -83,8 +83,15 @@ public class ServerViewModel : INotifyPropertyChanged
 
         _screenCapture.FrameCaptured += async frameData =>
         {
-            if (_signalR.IsConnected)
+            if (!_signalR.IsConnected) return;
+            try
+            {
                 await _signalR.SendFrame(ConnectionCode, frameData);
+            }
+            catch (Exception ex)
+            {
+                Status = $"Error enviando frame: {ex.Message}";
+            }
         };
     }
 
