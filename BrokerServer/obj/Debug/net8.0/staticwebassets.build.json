@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "2FZ5AH+NiFaGerBtf3HB0CBVaSj0s2RiS2r5E4PWNiw=",
+  "Source": "BrokerServer",
+  "BasePath": "_content/BrokerServer",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
